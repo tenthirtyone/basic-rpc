@@ -2,7 +2,7 @@ import { VM as EJS_VM } from "@ethereumjs/vm";
 import { Chain, Common, Hardfork } from "@ethereumjs/common";
 
 export default class VM {
-  private _vm: any;
+  private _vm: EJS_VM | undefined;
   private _common: any;
   constructor(_common?: any) {
     if (_common) {
@@ -19,6 +19,7 @@ export default class VM {
   // These should always be updated to latest
   static get DEFAULTS() {
     return {
+      workspace: "default",
       chain: Chain.Mainnet,
       hardfork: Hardfork.Merge,
     };

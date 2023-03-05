@@ -8,7 +8,6 @@
     "test": "nyc --reporter lcov npm run mocha",
     "mocha": "cross-env TS_NODE_FILES=true mocha --exit --check-leaks --throw-deprecation --trace-warnings --require ts-node/register './src/**/*.test.ts'",
     "mocha-watch": "cross-env TS_NODE_FILES=true mocha  --exit --check-leaks --throw-deprecation --trace-warnings --require ts-node/register './src/**/*.test.ts' --watch --watch-files src/**/*,test/**/*"
-
   },
   "keywords": [],
   "author": "",
@@ -22,6 +21,8 @@
     "typescript": "^4.9.4"
   },
   "dependencies": {
-    "@ethereumjs/vm": "^6.3.0"
+    "@ethereumjs/blockchain": "^6.2.1",
+    "@ethereumjs/vm": "^6.3.0",
+    "level": "^8.0.0"
   }
 }

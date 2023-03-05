@@ -1,4 +1,4 @@
-pragma solidity 0.8.17;
+pragma solidity 0.8.19;
 
 contract SimpleStorage {
     uint256 value;

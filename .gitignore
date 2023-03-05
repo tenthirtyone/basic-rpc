@@ -3,3 +3,4 @@ memory
 memory-journal
 .env
 .nyc_output
+coverage
