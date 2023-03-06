@@ -45,7 +45,7 @@ class API {
     use(middleware) {
         this._middlewares.push(middleware);
     }
-    handleRequest(req, res) {
+    handleRequest(_req, res) {
         res.statusCode = 404;
         res.setHeader("Content-Type", "text/plain");
         res.end("Not Found!");

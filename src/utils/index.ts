@@ -13,3 +13,18 @@ export const mergeDeep = (target: any, source?: any) => {
   Object.assign(target || {}, source);
   return target;
 };
+
+export const convertToBigInt = (input: string): bigint => {
+  // Check if the input is a hexadecimal string
+  if (/^0x([0-9A-Fa-f]{2})*$/.test(input)) {
+    return BigInt(input);
+  }
+
+  // Check if the input is a number
+  const number = Number(input);
+  if (!isNaN(number)) {
+    return BigInt(number);
+  }
+
+  return 0n;
+};

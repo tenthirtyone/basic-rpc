@@ -1,11 +1,5 @@
 import * as http from "http";
 
-type RequestHandler = (
-  req: http.IncomingMessage,
-  res: http.ServerResponse,
-  next: () => void
-) => void;
-
 export type Middleware = (
   req: http.IncomingMessage,
   res: http.ServerResponse,
@@ -38,7 +32,7 @@ export default class API {
   }
 
   private handleRequest(
-    req: http.IncomingMessage,
+    _req: http.IncomingMessage,
     res: http.ServerResponse
   ): void {
     res.statusCode = 404;

@@ -30,7 +30,8 @@ class BasicRPC {
             common: this._common,
             blockchain: this._blockchain,
         });
-        this._api.use(middleware_1.rpc);
+        const jsonRpc = (0, middleware_1.rpc)(this._blockchain);
+        this._api.use(jsonRpc);
         this._api.start();
     }
     close() {

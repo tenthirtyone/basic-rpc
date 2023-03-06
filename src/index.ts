@@ -48,7 +48,10 @@ export default class BasicRPC {
       common: this._common,
       blockchain: this._blockchain,
     });
-    this._api.use(rpc);
+
+    const jsonRpc = rpc(this._blockchain);
+
+    this._api.use(jsonRpc);
     this._api.start();
   }
 
