@@ -1,6 +1,5 @@
 import { VM as EJS_VM } from "@ethereumjs/vm";
 import { Blockchain } from "@ethereumjs/blockchain";
-
 import {
   Chain,
   Hardfork,
@@ -8,11 +7,12 @@ import {
   CommonOpts,
   ConsensusType,
 } from "@ethereumjs/common";
+import API from "./api";
+import { rpc } from "./api/middleware";
 import { mergeDeep } from "./utils";
 
 const { Level } = require("level");
 const { MemoryLevel } = require("memory-level");
-const gethDbPath = "./chaindata";
 
 type BasicRPCOptions = {
   workspace?: string;
@@ -21,6 +21,7 @@ type BasicRPCOptions = {
 
 export default class BasicRPC {
   _options: BasicRPCOptions;
+  _api: API = new API();
   _db: typeof Level;
   _common: Common;
   _blockchain: Blockchain | undefined;
@@ -47,10 +48,13 @@ export default class BasicRPC {
       common: this._common,
       blockchain: this._blockchain,
     });
+    this._api.use(rpc);
+    this._api.start();
   }
 
   close() {
     this._db.close();
+    this._api.stop();
   }
 
   async getBlock(number: number) {

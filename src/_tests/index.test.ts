@@ -20,9 +20,10 @@ describe("Basic RPC", () => {
     assert.strictEqual(genesisBlock.header.number, 0n);
   });
 
-  it("exists", async () => {
-    await basicrpc.start();
-    console.log(await basicrpc.mineBlock());
-    console.log(await basicrpc._blockchain.getBlock(1));
+  it("mines a block", async () => {
+    await basicrpc.mineBlock();
+    const block = await basicrpc._blockchain.getBlock(1);
+
+    assert.strictEqual(block.header.number, 1n);
   });
 });
