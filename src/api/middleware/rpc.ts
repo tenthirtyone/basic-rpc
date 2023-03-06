@@ -1,41 +1,27 @@
-import * as http from "http";
+import { RPCRequest, RPCResponse } from "./_types";
 import { Blockchain } from "@ethereumjs/blockchain";
 import { convertToBigInt } from "../../utils";
 
+const debug = require("debug")("basicRPC:rpc");
+
 export const rpc = (blockchain: Blockchain) => {
   const jsonrpc: RPC = new RPC(blockchain);
-  return (
-    req: http.IncomingMessage,
-    res: http.ServerResponse,
-    next: () => void
-  ) => {
-    if (req.method === "POST") {
-      let body = "";
+  return async (req: RPCRequest, res: RPCResponse, next: () => void) => {
+    try {
+      const { method, params } = req.body;
 
-      req.on("data", (chunk) => {
-        body += chunk.toString();
-      });
-
-      req.on("end", async () => {
-        try {
-          const postBody = JSON.parse(body);
-          const { method, params } = postBody;
-
-          res.statusCode = 200;
-          res.setHeader("Content-Type", "application/json");
-          res.end(await jsonrpc[method](...params));
-        } catch (e) {
-          res.statusCode = 500;
-          res.setHeader("Content-Type", "text/plain");
-          res.end("Error");
-        }
-      });
-    } else {
-      next();
+      res.statusCode = 200;
+      res.setHeader("Content-Type", "application/json");
+      res.end(await jsonrpc[method](...params));
+    } catch (e) {
+      res.statusCode = 500;
+      res.setHeader("Content-Type", "text/plain");
+      res.end("Error");
     }
   };
 };
 
+//todo attach ref to app on req, move this to its own file,
 class RPC {
   _blockchain: Blockchain;
   [key: string]: any;

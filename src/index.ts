@@ -8,7 +8,7 @@ import {
   ConsensusType,
 } from "@ethereumjs/common";
 import API from "./api";
-import { rpc } from "./api/middleware";
+import { rpc, logger, onlyPOST, getPOSTBody } from "./api/middleware";
 import { mergeDeep } from "./utils";
 
 const { Level } = require("level");
@@ -51,6 +51,9 @@ export default class BasicRPC {
 
     const jsonRpc = rpc(this._blockchain);
 
+    this._api.use(logger);
+    this._api.use(onlyPOST);
+    this._api.use(getPOSTBody);
     this._api.use(jsonRpc);
     this._api.start();
   }
@@ -93,4 +96,11 @@ export default class BasicRPC {
       },
     };
   }
+}
+
+if (require.main === module) {
+  const rpc = new BasicRPC();
+  rpc.start();
+} else {
+  module.exports = BasicRPC;
 }
