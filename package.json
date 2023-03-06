@@ -23,6 +23,7 @@
   "dependencies": {
     "@ethereumjs/blockchain": "^6.2.1",
     "@ethereumjs/vm": "^6.3.0",
+    "debug": "^4.3.4",
     "level": "^8.0.0",
     "levelup": "^5.1.1",
     "memdown": "^6.1.1",

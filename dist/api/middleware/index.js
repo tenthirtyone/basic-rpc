@@ -11,11 +11,11 @@ const rpc = (blockchain) => {
                 body += chunk.toString();
             });
             req.on("end", async () => {
-                console.log("Received POST body:", body);
-                const postBody = JSON.parse(body);
-                const { method, params } = postBody;
-                console.log(method);
                 try {
+                    console.log("Received POST body:", body);
+                    const postBody = JSON.parse(body);
+                    const { method, params } = postBody;
+                    console.log(method);
                     res.statusCode = 200;
                     res.setHeader("Content-Type", "application/json");
                     res.end(await jsonrpc[method](...params));
