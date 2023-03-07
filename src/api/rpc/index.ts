@@ -13,6 +13,9 @@ export default class RPC {
     this._miner = miner;
     this.methods = {
       eth_getBlockByNumber: this.eth_getBlockByNumber.bind(this),
+      evm_mineBlock: this.evm_mineBlock.bind(this),
+      evm_minerStart: this.evm_minerStart.bind(this),
+      evm_minerStop: this.evm_minerStop.bind(this),
     };
   }
 
@@ -22,10 +25,23 @@ export default class RPC {
         convertToBigInt(blockNumber)
       );
 
-      return block.toJSON();
+      return flattenObject(block.toJSON());
     } catch (e) {
       // TODO
     }
     return null;
+  }
+
+  async evm_mineBlock() {
+    const block = await this._miner.mineBlock();
+    return flattenObject(block.toJSON());
+  }
+
+  evm_minerStart() {
+    return this._miner.minerStart();
+  }
+
+  evm_minerStop() {
+    return this._miner.minerStop();
   }
 }

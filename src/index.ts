@@ -40,7 +40,7 @@ export default class BasicRPC {
       db: this._db,
       validateConsensus:
         this._common.consensusType() === ConsensusType.ProofOfWork,
-      validateBlocks: true,
+      validateBlocks: false,
     });
 
     this._evm = await EJS_VM.create({

@@ -39,11 +39,11 @@ export default class API {
             res.statusCode = 200;
             res.setHeader("Content-Type", "application/json");
             res.end(JSON.stringify(payload));
-          } catch (e) {
-            responseLogger.error(`${method}(${JSON.stringify(params)})`);
+          } catch (e: any) {
+            responseLogger.error(e.message);
             res.statusCode = 500;
             res.setHeader("Content-Type", "text/plain");
-            res.end("Error - method not found");
+            res.end(`Error: ${e.message}`);
           }
         } else {
           // Otherwise, call the next middleware in the chain

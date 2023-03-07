@@ -1,24 +1,18 @@
 import { VM as EJS_VM } from "@ethereumjs/vm";
 import { Blockchain } from "@ethereumjs/blockchain";
-import {
-  Chain,
-  Hardfork,
-  Common,
-  CommonOpts,
-  ConsensusType,
-} from "@ethereumjs/common";
-import { Block } from "@ethereumjs/block";
-import { Transaction } from "@ethereumjs/tx";
+import { Common } from "@ethereumjs/common";
 import { oneSecond } from "../utils";
 
 const { Level } = require("level");
-const { MemoryLevel } = require("memory-level");
+
 export default class Miner {
   _common: Common;
   _blockchain: Blockchain;
   _db: typeof Level;
-  //_pendingBlock: Block;
+  _mining: boolean = false;
   _evm: EJS_VM;
+  _miningInterval = oneSecond;
+  _miningLoop: NodeJS.Timer | undefined;
 
   constructor(
     common: Common,
@@ -30,5 +24,29 @@ export default class Miner {
     this._blockchain = blockchain;
     this._evm = evm;
     this._db = db;
+  }
+
+  minerStart() {
+    this._mining = true;
+    this._miningLoop = setInterval(() => {
+      this.mineBlock();
+    }, this._miningInterval);
+    return this._mining;
+  }
+
+  minerStop() {
+    clearInterval(this._miningLoop);
+    this._mining = false;
+    return this._mining;
+  }
+
+  async mineBlock() {
+    const blockBuilder = await this._evm.buildBlock({
+      parentBlock: await this._blockchain.getCanonicalHeadBlock(),
+    });
+
+    // TODO add transactions from tx pool.
+
+    return await blockBuilder.build();
   }
 }
