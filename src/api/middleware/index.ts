@@ -1,4 +1,3 @@
-export { rpc } from "./rpc";
-export { logger } from "./logger";
-export { onlyPOST } from "./onlyPOST";
-export { getPOSTBody } from "./getPOSTBody";
+export { authentication } from "./authentication";
+export { logging } from "./logging";
+export { bodyParser } from "./bodyParser";

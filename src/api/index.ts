@@ -1,21 +1,25 @@
 import * as http from "http";
-
-export type Middleware = (
-  req: http.IncomingMessage,
-  res: http.ServerResponse,
-  next: () => void
-) => void;
+import { Blockchain } from "@ethereumjs/blockchain";
+import RPC from "./rpc";
+import { Middleware, RPCRequest, RPCResponse } from "../_types";
 
 export default class API {
+  private _rpc: RPC;
   private _server: http.Server;
   private _middlewares: Middleware[] = [];
 
-  constructor() {
-    this._server = http.createServer((req, res) => {
-      const handleRequest = (index: number) => {
+  constructor(blockchain: Blockchain) {
+    this._rpc = new RPC(blockchain);
+    this._server = http.createServer((req: RPCRequest, res: RPCResponse) => {
+      const handleRequest = async (index: number) => {
         if (index >= this._middlewares.length) {
           // If all middlewares have been executed, handle the request using the final request handler
-          this.handleRequest(req, res);
+          const { method, params } = req.body;
+
+          res.statusCode = 200;
+          res.setHeader("Content-Type", "application/json");
+          //@ts-ignore
+          res.end(JSON.stringify(await this._rpc[method](...params)));
         } else {
           // Otherwise, call the next middleware in the chain
           const middleware = this._middlewares[index];
@@ -29,15 +33,6 @@ export default class API {
 
   use(middleware: Middleware): void {
     this._middlewares.push(middleware);
-  }
-
-  private handleRequest(
-    _req: http.IncomingMessage,
-    res: http.ServerResponse
-  ): void {
-    res.statusCode = 404;
-    res.setHeader("Content-Type", "text/plain");
-    res.end("Not Found!");
   }
 
   start(): void {

@@ -8,7 +8,8 @@ import {
   ConsensusType,
 } from "@ethereumjs/common";
 import API from "./api";
-import { rpc, logger, onlyPOST, getPOSTBody } from "./api/middleware";
+import RPC from "./api/rpc";
+import { authentication, logging, bodyParser } from "./api/middleware";
 import { mergeDeep } from "./utils";
 
 const { Level } = require("level");
@@ -21,7 +22,8 @@ type BasicRPCOptions = {
 
 export default class BasicRPC {
   _options: BasicRPCOptions;
-  _api: API = new API();
+  _api: API | undefined;
+
   _db: typeof Level;
   _common: Common;
   _blockchain: Blockchain | undefined;
@@ -44,23 +46,24 @@ export default class BasicRPC {
       validateBlocks: true,
     });
 
+    this._api = new API(this._blockchain);
+
     this._evm = await EJS_VM.create({
       common: this._common,
       blockchain: this._blockchain,
     });
 
-    const jsonRpc = rpc(this._blockchain);
-
-    this._api.use(logger);
-    this._api.use(onlyPOST);
-    this._api.use(getPOSTBody);
-    this._api.use(jsonRpc);
+    this._api.use(logging);
+    this._api.use(authentication);
+    this._api.use(bodyParser);
     this._api.start();
   }
 
   close() {
     this._db.close();
-    this._api.stop();
+    if (this._api) {
+      this._api.stop();
+    }
   }
 
   async getBlock(number: number) {

@@ -6,8 +6,8 @@ export interface RPCRequest extends http.IncomingMessage {
 
 export interface RPCResponse extends http.ServerResponse {}
 
-export type Middleware = {
-  req: http.IncomingMessage | RPCRequest;
-  res: http.ServerResponse | RPCResponse;
-  next: () => void;
-};
+export type Middleware = (
+  req: http.IncomingMessage,
+  res: http.ServerResponse,
+  next: () => void
+) => void;

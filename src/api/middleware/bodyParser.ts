@@ -1,7 +1,6 @@
-import { RPCRequest, RPCResponse } from "./_types";
-const debug = require("debug")("basicRPC:getPOSTBody");
+import { RPCRequest, RPCResponse } from "../../_types";
 
-export const getPOSTBody = (
+export const bodyParser = (
   req: RPCRequest,
   res: RPCResponse,
   next: () => void
@@ -14,15 +13,12 @@ export const getPOSTBody = (
 
   req.on("end", async () => {
     try {
-      const postBody = JSON.parse(body);
-      debug(postBody);
-      req.body = postBody;
-      next();
+      req.body = JSON.parse(body);
     } catch (e: any) {
-      debug(e.message);
       res.statusCode = 500;
       res.setHeader("Content-Type", "text/plain");
       res.end("Error parsing post body");
     }
+    next();
   });
 };
