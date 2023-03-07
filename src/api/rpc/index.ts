@@ -1,4 +1,4 @@
-import { Blockchain } from "@ethereumjs/blockchain";
+import Miner from "../../miner";
 import { convertToBigInt, flattenObject } from "../../utils";
 
 interface RPCMethod {
@@ -6,27 +6,26 @@ interface RPCMethod {
 }
 
 export default class RPC {
-  _blockchain: Blockchain;
+  _miner: Miner;
   methods: RPCMethod;
 
-  constructor(blockchain: Blockchain) {
-    this._blockchain = blockchain;
+  constructor(miner: Miner) {
+    this._miner = miner;
     this.methods = {
       eth_getBlockByNumber: this.eth_getBlockByNumber.bind(this),
-      eth_getBlockByHash: this.eth_getBlockByHash.bind(this),
     };
   }
 
   async eth_getBlockByNumber(blockNumber: string) {
     try {
-      return flattenObject(
-        (await this._blockchain.getBlock(convertToBigInt(blockNumber))).toJSON()
+      const block = await this._miner._blockchain.getBlock(
+        convertToBigInt(blockNumber)
       );
+
+      return block.toJSON();
     } catch (e) {
-      return null;
+      // TODO
     }
-  }
-  async eth_getBlockByHash(hash: Buffer) {
-    return await this._blockchain.getBlock(hash);
+    return null;
   }
 }

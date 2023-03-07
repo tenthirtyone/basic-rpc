@@ -48,13 +48,14 @@ export default class BasicRPC {
       blockchain: this._blockchain,
     });
 
-    this._api = new API(this._blockchain);
     this._miner = new Miner(
       this._common,
       this._blockchain,
       this._evm,
       this._db
     );
+
+    this._api = new API(this._miner);
 
     this._api.start();
   }
@@ -64,29 +65,6 @@ export default class BasicRPC {
     if (this._api) {
       this._api.stop();
     }
-  }
-
-  async getBlock(number: number) {
-    if (!this._blockchain) return number;
-
-    return await this._blockchain.getBlock(number);
-  }
-
-  async genesisBlock() {
-    if (!this._blockchain) return;
-    return await this._blockchain.getBlock(0);
-  }
-
-  async mineBlock() {
-    if (!this._evm || !this._blockchain) return;
-
-    const pendingBlock = await this._evm.buildBlock({
-      parentBlock: await this._blockchain.getBlock(0),
-    });
-
-    await pendingBlock.build();
-
-    return pendingBlock;
   }
 
   static get DEFAULTS(): BasicRPCOptions {

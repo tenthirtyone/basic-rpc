@@ -15,10 +15,10 @@ const { Level } = require("level");
 const { MemoryLevel } = require("memory-level");
 export default class Miner {
   _common: Common;
-  _blockchain: Blockchain | undefined;
+  _blockchain: Blockchain;
   _db: typeof Level;
   //_pendingBlock: Block;
-  _evm: EJS_VM | undefined;
+  _evm: EJS_VM;
 
   constructor(
     common: Common,
