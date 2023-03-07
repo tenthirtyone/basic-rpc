@@ -1,4 +1,7 @@
 import { RPCRequest, RPCResponse } from "../../_types";
+import createLogger from "../../logger";
+
+const logger = createLogger("bodyParser");
 
 export const bodyParser = (
   req: RPCRequest,
@@ -13,6 +16,7 @@ export const bodyParser = (
 
   req.on("end", async () => {
     try {
+      logger.info(`POST body: ${body}`);
       req.body = JSON.parse(body);
     } catch (e: any) {
       res.statusCode = 500;

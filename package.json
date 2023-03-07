@@ -15,6 +15,7 @@
   "devDependencies": {
     "@types/mocha": "^10.0.1",
     "cross-env": "^7.0.3",
+    "dependency-cruiser": "^12.10.0",
     "mocha": "^10.2.0",
     "nyc": "^15.1.0",
     "ts-node": "^10.9.1",

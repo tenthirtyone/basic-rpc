@@ -1,5 +1,5 @@
 import { Blockchain } from "@ethereumjs/blockchain";
-import { eth_getBlockByHash, eth_getBlockByNumber } from "./eth";
+import { convertToBigInt, flattenObject } from "../../utils";
 
 interface RPCMethod {
   [key: string]: any;
@@ -12,8 +12,21 @@ export default class RPC {
   constructor(blockchain: Blockchain) {
     this._blockchain = blockchain;
     this.methods = {
-      eth_getBlockByNumber: eth_getBlockByNumber.bind(null, this._blockchain),
-      eth_getBlockByHash: eth_getBlockByHash.bind(null, this._blockchain),
+      eth_getBlockByNumber: this.eth_getBlockByNumber.bind(this),
+      eth_getBlockByHash: this.eth_getBlockByHash.bind(this),
     };
+  }
+
+  async eth_getBlockByNumber(blockNumber: string) {
+    try {
+      return flattenObject(
+        (await this._blockchain.getBlock(convertToBigInt(blockNumber))).toJSON()
+      );
+    } catch (e) {
+      return null;
+    }
+  }
+  async eth_getBlockByHash(hash: Buffer) {
+    return await this._blockchain.getBlock(hash);
   }
 }

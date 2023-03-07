@@ -8,8 +8,7 @@ import {
   ConsensusType,
 } from "@ethereumjs/common";
 import API from "./api";
-import RPC from "./api/rpc";
-import { authentication, logging, bodyParser } from "./api/middleware";
+import Miner from "./miner";
 import { mergeDeep } from "./utils";
 
 const { Level } = require("level");
@@ -23,7 +22,7 @@ type BasicRPCOptions = {
 export default class BasicRPC {
   _options: BasicRPCOptions;
   _api: API | undefined;
-
+  _miner: Miner | undefined;
   _db: typeof Level;
   _common: Common;
   _blockchain: Blockchain | undefined;
@@ -36,26 +35,27 @@ export default class BasicRPC {
   }
 
   async start() {
-    const validatePow =
-      this._common.consensusType() === ConsensusType.ProofOfWork;
-
     this._blockchain = await Blockchain.create({
       common: this._common,
       db: this._db,
-      validateConsensus: validatePow,
+      validateConsensus:
+        this._common.consensusType() === ConsensusType.ProofOfWork,
       validateBlocks: true,
     });
-
-    this._api = new API(this._blockchain);
 
     this._evm = await EJS_VM.create({
       common: this._common,
       blockchain: this._blockchain,
     });
 
-    this._api.use(logging);
-    this._api.use(authentication);
-    this._api.use(bodyParser);
+    this._api = new API(this._blockchain);
+    this._miner = new Miner(
+      this._common,
+      this._blockchain,
+      this._evm,
+      this._db
+    );
+
     this._api.start();
   }
 

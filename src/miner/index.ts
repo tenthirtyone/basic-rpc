@@ -1,63 +1,34 @@
-import { Chain, Common, Hardfork } from "@ethereumjs/common";
+import { VM as EJS_VM } from "@ethereumjs/vm";
+import { Blockchain } from "@ethereumjs/blockchain";
+import {
+  Chain,
+  Hardfork,
+  Common,
+  CommonOpts,
+  ConsensusType,
+} from "@ethereumjs/common";
 import { Block } from "@ethereumjs/block";
 import { Transaction } from "@ethereumjs/tx";
-import VM from "../vm";
 import { oneSecond } from "../utils";
 
+const { Level } = require("level");
+const { MemoryLevel } = require("memory-level");
 export default class Miner {
-  private _INTERVAL = 12 * oneSecond;
-  private _MINING_LOOP: any;
-  private _mining = false;
-  private _VM: any;
-  private _config: any;
-  private _common: any;
-  private _txQueue = [];
+  _common: Common;
+  _blockchain: Blockchain | undefined;
+  _db: typeof Level;
+  //_pendingBlock: Block;
+  _evm: EJS_VM | undefined;
 
-  constructor(config?: any) {
-    this._config = {
-      ...Miner.DEFAULTS,
-      ...config,
-    };
-
-    const { common } = this._config;
-
-    this._common = new Common(common);
-    this._VM = new VM(common);
-  }
-
-  mineBlock() {
-    return new Block();
-  }
-
-  start() {
-    this._mining = true;
-    this._MINING_LOOP = setInterval(() => {
-      if (this._mining) {
-        // mine
-      }
-    }, this._INTERVAL);
-  }
-
-  stop() {
-    this._mining = false;
-    clearInterval(this._MINING_LOOP);
-  }
-
-  addTransaction(tx: any) {
-    // @ts-ignore
-    this._txQueue.push();
-  }
-
-  createTransaction(txData: any) {
-    return Transaction.fromTxData(txData);
-  }
-
-  static get DEFAULTS() {
-    return {
-      common: {
-        chain: Chain.Mainnet,
-        hardfork: Hardfork.Merge,
-      },
-    };
+  constructor(
+    common: Common,
+    blockchain: Blockchain,
+    evm: EJS_VM,
+    db: typeof Level
+  ) {
+    this._common = common;
+    this._blockchain = blockchain;
+    this._evm = evm;
+    this._db = db;
   }
 }
