@@ -14,12 +14,19 @@ export default class API {
       const handleRequest = async (index: number) => {
         if (index >= this._middlewares.length) {
           // If all middlewares have been executed, handle the request using the final request handler
-          const { method, params } = req.body;
+          const { id, method, params } = req.body;
 
           res.statusCode = 200;
           res.setHeader("Content-Type", "application/json");
-          //@ts-ignore
-          res.end(JSON.stringify(await this._rpc[method](...params)));
+
+          const payload = {
+            jsonrpc: "2.0",
+            id,
+
+            result: JSON.stringify(await this._rpc.methods[method](...params)),
+          };
+
+          res.end();
         } else {
           // Otherwise, call the next middleware in the chain
           const middleware = this._middlewares[index];

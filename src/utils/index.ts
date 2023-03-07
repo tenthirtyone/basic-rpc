@@ -28,3 +28,17 @@ export const convertToBigInt = (input: string): bigint => {
 
   return 0n;
 };
+
+type AnyObject = { [key: string]: any };
+
+export function flattenObject(obj: AnyObject): AnyObject {
+  const result: AnyObject = {};
+  for (const [key, value] of Object.entries(obj)) {
+    if (typeof value === "object" && value !== null) {
+      Object.assign(result, flattenObject(value));
+    } else {
+      result[key] = value;
+    }
+  }
+  return result;
+}
