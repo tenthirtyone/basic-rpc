@@ -22,11 +22,10 @@ export default class API {
           const payload = {
             jsonrpc: "2.0",
             id,
-
-            result: JSON.stringify(await this._rpc.methods[method](...params)),
+            result: await this._rpc.methods[method](...params),
           };
 
-          res.end();
+          res.end(JSON.stringify(payload));
         } else {
           // Otherwise, call the next middleware in the chain
           const middleware = this._middlewares[index];
