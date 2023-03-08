@@ -11,3 +11,5 @@ export type Middleware = (
   res: http.ServerResponse,
   next: () => void
 ) => void;
+
+export type Tag = "earliest" | "finalized" | "safe" | "latest" | "pending";

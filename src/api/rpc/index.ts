@@ -1,5 +1,5 @@
 import Miner from "../../miner";
-import { convertToBigInt, flattenObject } from "../../utils";
+import { flattenObject } from "../../utils";
 
 interface RPCMethod {
   [key: string]: any;
@@ -20,10 +20,9 @@ export default class RPC {
   }
 
   async eth_getBlockByNumber(blockNumber: string) {
+    const number = this._miner.getBlockNumber(blockNumber);
     try {
-      const block = await this._miner._blockchain.getBlock(
-        convertToBigInt(blockNumber)
-      );
+      const block = await this._miner._blockchain.getBlock(number);
 
       return flattenObject(block.toJSON());
     } catch (e) {
