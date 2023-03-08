@@ -24,7 +24,7 @@ export default class API {
         if (index >= this._middlewares.length) {
           // If all middlewares have been executed, handle the request using the final request handler
           const { id, method, params } = req.body;
-          requestLogger.info(`${method}(${JSON.stringify(params)})`);
+          requestLogger.info(`${method}(${params.join(",")})`);
 
           try {
             const result = await this._rpc.methods[method](...params);

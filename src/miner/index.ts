@@ -68,8 +68,16 @@ export default class Miner {
     return block;
   }
 
-  async getBlock(blockNumber: string | Tag): Promise<Block> {
-    if (blockNumber.substring(0, 2) === "0x") {
+  async getBlock(
+    blockNumber: Buffer | bigint | number | string | Tag
+  ): Promise<Block> {
+    if (
+      typeof blockNumber === "bigint" ||
+      typeof blockNumber === "number" ||
+      Buffer.isBuffer(blockNumber)
+    ) {
+      return await this._blockchain.getBlock(blockNumber);
+    } else if (blockNumber.substring(0, 2) === "0x") {
       return await this._blockchain.getBlock(convertToBigInt(blockNumber));
     } else if (blockNumber === "pending") {
       return await this.getPendingBlock();

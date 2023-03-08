@@ -1,5 +1,5 @@
 import Miner from "../../miner";
-import { flattenObject } from "../../utils";
+import { flattenObject, hexStringToBuffer } from "../../utils";
 
 interface RPCMethod {
   [key: string]: any;
@@ -12,11 +12,23 @@ export default class RPC {
   constructor(miner: Miner) {
     this._miner = miner;
     this.methods = {
+      eth_getBlockByHash: this.eth_getBlockByHash.bind(this),
       eth_getBlockByNumber: this.eth_getBlockByNumber.bind(this),
       evm_mineBlock: this.evm_mineBlock.bind(this),
       evm_minerStart: this.evm_minerStart.bind(this),
       evm_minerStop: this.evm_minerStop.bind(this),
     };
+  }
+
+  async eth_getBlockByHash(blockHash: string) {
+    try {
+      const hash = hexStringToBuffer(blockHash);
+      const block = await this._miner.getBlock(hash);
+      return flattenObject(block.toJSON());
+    } catch (e) {
+      // TODO
+    }
+    return null;
   }
 
   async eth_getBlockByNumber(blockNumber: string) {

@@ -42,3 +42,22 @@ export function flattenObject(obj: AnyObject): AnyObject {
   }
   return result;
 }
+
+export function hexStringToBuffer(hex: string): Buffer {
+  if (hex.substring(0, 2) === "0x") {
+    hex = hex.slice(2);
+  }
+
+  if (hex.length % 2 !== 0) {
+    throw new Error("Hex string must have an even number of characters");
+  }
+
+  const buffer = Buffer.allocUnsafe(hex.length / 2);
+
+  for (let i = 0; i < hex.length; i += 2) {
+    const byte = parseInt(hex.substr(i, 2), 16);
+    buffer.writeUInt8(byte, i / 2);
+  }
+
+  return buffer;
+}
