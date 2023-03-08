@@ -20,9 +20,8 @@ export default class RPC {
   }
 
   async eth_getBlockByNumber(blockNumber: string) {
-    const number = this._miner.getBlockNumber(blockNumber);
     try {
-      const block = await this._miner._blockchain.getBlock(number);
+      const block = await this._miner.getBlock(blockNumber);
 
       return flattenObject(block.toJSON());
     } catch (e) {
