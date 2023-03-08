@@ -61,3 +61,8 @@ export function hexStringToBuffer(hex: string): Buffer {
 
   return buffer;
 }
+
+export function decimalToHexString(num: number): string {
+  const hexString = num.toString(16);
+  return `0x${hexString}`;
+}

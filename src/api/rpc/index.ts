@@ -1,5 +1,9 @@
 import Miner from "../../miner";
-import { flattenObject, hexStringToBuffer } from "../../utils";
+import {
+  flattenObject,
+  hexStringToBuffer,
+  decimalToHexString,
+} from "../../utils";
 import createLogger from "../../logger";
 
 const logger = createLogger("RPC");
@@ -19,6 +23,8 @@ export default class RPC {
       eth_getBlockByNumber: this.eth_getBlockByNumber.bind(this),
       eth_getBlockTransactionCountByHash:
         this.eth_getBlockTransactionCountByHash.bind(this),
+      eth_getBlockTransactionCountByNumber:
+        this.eth_getBlockTransactionCountByNumber.bind(this),
       evm_mineBlock: this.evm_mineBlock.bind(this),
       evm_minerStart: this.evm_minerStart.bind(this),
       evm_minerStop: this.evm_minerStop.bind(this),
@@ -51,7 +57,19 @@ export default class RPC {
     try {
       const hash = hexStringToBuffer(blockHash);
       const block = await this._miner.getBlock(hash);
-      return block.transactions.length;
+
+      return decimalToHexString(block.transactions.length);
+    } catch (e: any) {
+      logger.error(e.message);
+    }
+    return null;
+  }
+
+  async eth_getBlockTransactionCountByNumber(blockNumber: string) {
+    try {
+      const block = await this._miner.getBlock(blockNumber);
+
+      return decimalToHexString(block.transactions.length);
     } catch (e: any) {
       logger.error(e.message);
     }
