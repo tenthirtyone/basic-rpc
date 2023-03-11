@@ -8,6 +8,7 @@ import { convertToBigInt } from "../utils";
 const { Level } = require("level");
 
 export default class Miner {
+  _coinbase: Buffer;
   _common: Common;
   _blockchain: Blockchain;
   _db: typeof Level;
@@ -17,12 +18,22 @@ export default class Miner {
   _miningLoop: NodeJS.Timer | undefined;
   _latestBlockNumber: bigint = 0n;
 
+  get chainId() {
+    return this._common.chainId;
+  }
+
+  get coinbase() {
+    return "0x";
+  }
+
   constructor(
+    coinbase: Buffer,
     common: Common,
     blockchain: Blockchain,
     evm: EJS_VM,
     db: typeof Level
   ) {
+    this._coinbase = coinbase;
     this._common = common;
     this._blockchain = blockchain;
     this._evm = evm;
@@ -46,6 +57,9 @@ export default class Miner {
   async mineBlock() {
     const blockBuilder = await this._evm.buildBlock({
       parentBlock: await this._blockchain.getCanonicalHeadBlock(),
+      headerData: {
+        coinbase: this._coinbase,
+      },
     });
 
     // TODO add transactions from tx pool.

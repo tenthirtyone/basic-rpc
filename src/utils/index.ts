@@ -1,3 +1,4 @@
+import crypto from "crypto";
 export const oneSecond = 1000;
 export const oneMinute = oneSecond * 60;
 export const oneHour = oneMinute * 60;
@@ -65,4 +66,12 @@ export function hexStringToBuffer(hex: string): Buffer {
 export function decimalToHexString(num: number): string {
   const hexString = num.toString(16);
   return `0x${hexString}`;
+}
+
+export function randomEthereumAddress(): Buffer {
+  return generateRandomBytes(20);
+}
+
+function generateRandomBytes(len: number): Buffer {
+  return crypto.randomBytes(len);
 }

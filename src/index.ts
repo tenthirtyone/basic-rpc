@@ -9,7 +9,7 @@ import {
 } from "@ethereumjs/common";
 import API from "./api";
 import Miner from "./miner";
-import { mergeDeep } from "./utils";
+import { mergeDeep, randomEthereumAddress } from "./utils";
 
 const { Level } = require("level");
 const { MemoryLevel } = require("memory-level");
@@ -48,7 +48,10 @@ export default class BasicRPC {
       blockchain: this._blockchain,
     });
 
+    // create the wallet, address[0] === coinbase;
+
     this._miner = new Miner(
+      randomEthereumAddress(),
       this._common,
       this._blockchain,
       this._evm,
