@@ -48,8 +48,6 @@ export default class BasicRPC {
       blockchain: this._blockchain,
     });
 
-    // create the wallet, address[0] === coinbase;
-
     this._miner = new Miner(
       randomEthereumAddress(),
       this._common,

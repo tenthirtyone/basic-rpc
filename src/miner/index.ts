@@ -5,6 +5,7 @@ import { Common } from "@ethereumjs/common";
 import { oneSecond } from "../utils";
 import { Tag } from "../_types";
 import { convertToBigInt } from "../utils";
+import EthereumHDWallet from "../wallet";
 const { Level } = require("level");
 
 export default class Miner {
@@ -17,13 +18,18 @@ export default class Miner {
   _miningInterval = oneSecond;
   _miningLoop: NodeJS.Timer | undefined;
   _latestBlockNumber: bigint = 0n;
+  _wallet: EthereumHDWallet;
 
   get chainId() {
     return this._common.chainId;
   }
 
   get coinbase() {
-    return "0x";
+    return this._coinbase;
+  }
+
+  get accounts() {
+    return this._wallet.accounts;
   }
 
   constructor(
@@ -38,6 +44,7 @@ export default class Miner {
     this._blockchain = blockchain;
     this._evm = evm;
     this._db = db;
+    this._wallet = new EthereumHDWallet();
   }
 
   minerStart() {

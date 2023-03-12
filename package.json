@@ -13,6 +13,7 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@types/hdkey": "^2.0.1",
     "@types/mocha": "^10.0.1",
     "cross-env": "^7.0.3",
     "dependency-cruiser": "^12.10.0",
@@ -24,9 +25,12 @@
   "dependencies": {
     "@ethereumjs/blockchain": "^6.2.1",
     "@ethereumjs/vm": "^6.3.0",
+    "bip39": "^3.1.0",
     "bunyan": "^1.8.15",
     "bunyan-format": "^0.2.1",
     "debug": "^4.3.4",
+    "hdkey": "^2.1.0",
+    "keccak256": "^1.0.6",
     "level": "^8.0.0",
     "levelup": "^5.1.1",
     "memdown": "^6.1.1",

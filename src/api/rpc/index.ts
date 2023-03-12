@@ -31,6 +31,8 @@ export default class RPC {
         this.eth_getUncleCountByBlockNumber.bind(this),
       eth_chainId: this.eth_chainId.bind(this),
       eth_syncing: this.eth_syncing.bind(this),
+      eth_accounts: this.eth_accounts.bind(this),
+      // evm
       evm_mineBlock: this.evm_mineBlock.bind(this),
       evm_minerStart: this.evm_minerStart.bind(this),
       evm_minerStop: this.evm_minerStop.bind(this),
@@ -116,6 +118,24 @@ export default class RPC {
   eth_coinbase() {
     return this._miner.coinbase;
   }
+
+  eth_accounts() {
+    return this._miner.accounts;
+  }
+
+  eth_blockNumber() {}
+
+  eth_call() {}
+
+  eth_estimateGas() {}
+
+  eth_createAccessList() {}
+
+  eth_gasPrice() {}
+
+  eth_maxPriorityFeePerGas() {}
+
+  eth_feeHistory() {}
 
   async evm_mineBlock() {
     const block = await this._miner.mineBlock();
