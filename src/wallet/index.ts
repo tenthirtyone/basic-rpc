@@ -10,7 +10,7 @@ type Account = {
 };
 
 export default class DevHDWallet {
-  _seedPhrase: string;
+  _seedPhrase: string = bip39.generateMnemonic();
   _hdKey;
   _path: string = "m/00'/00'/0'/0/0";
   _privateKey: Buffer;
@@ -22,8 +22,8 @@ export default class DevHDWallet {
     return this._accounts.map((account) => account.address);
   }
 
-  constructor(path?: string) {
-    this._seedPhrase = bip39.generateMnemonic();
+  constructor(mnemonic?: string, path?: string) {
+    this._seedPhrase = mnemonic || this._seedPhrase;
     this._path = path || this._path;
 
     this._hdKey = hdkey.fromMasterSeed(

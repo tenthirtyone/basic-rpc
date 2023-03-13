@@ -1,4 +1,5 @@
 import Miner from "../../miner";
+import { JsonRpcTx } from "@ethereumjs/tx";
 import {
   flattenObject,
   hexStringToBuffer,
@@ -33,6 +34,8 @@ export default class RPC {
       eth_syncing: this.eth_syncing.bind(this),
       eth_accounts: this.eth_accounts.bind(this),
       eth_blockNumber: this.eth_blockNumber.bind(this),
+
+      eth_sendTransaction: this.eth_sendTransaction.bind(this),
       // evm
       evm_mineBlock: this.evm_mineBlock.bind(this),
       evm_minerStart: this.evm_minerStart.bind(this),
@@ -140,6 +143,11 @@ export default class RPC {
 
   eth_feeHistory() {}
 
+  eth_sendTransaction(txData: JsonRpcTx) {
+    return this._miner.sendTransaction(txData);
+  }
+
+  // evm
   async evm_mineBlock() {
     const block = await this._miner.mineBlock();
     return flattenObject(block.toJSON());

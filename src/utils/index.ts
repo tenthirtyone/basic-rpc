@@ -64,8 +64,7 @@ export function hexStringToBuffer(hex: string): Buffer {
 }
 
 export function numberToHexString(num: number | BigInt): string {
-  const hexString = num.toString(16);
-  return `0x${hexString}`;
+  return `0x${num.toString(16)}`;
 }
 
 export function randomEthereumAddress(): Buffer {
@@ -74,4 +73,8 @@ export function randomEthereumAddress(): Buffer {
 
 function generateRandomBytes(len: number): Buffer {
   return crypto.randomBytes(len);
+}
+
+export function bufferToHexString(num: Buffer): string {
+  return `0x${num.toString("hex")}`;
 }

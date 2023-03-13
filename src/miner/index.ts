@@ -2,8 +2,13 @@ import { VM as EJS_VM } from "@ethereumjs/vm";
 import { Blockchain } from "@ethereumjs/blockchain";
 import { Block } from "@ethereumjs/block";
 import {
+  AccessListEIP2930Transaction,
+  BlobEIP4844Transaction,
+  Transaction,
   FeeMarketEIP1559Transaction,
   FeeMarketEIP1559TxData,
+  JsonTx,
+  JsonRpcTx,
 } from "@ethereumjs/tx";
 import { Common } from "@ethereumjs/common";
 import { oneSecond } from "../utils";
@@ -23,6 +28,7 @@ export default class Miner {
   _miningLoop: NodeJS.Timer | undefined;
   _latestBlockNumber: bigint = 0n;
   _wallet: EthereumHDWallet;
+  _txs: any[] = [];
 
   get chainId() {
     return this._common.chainId;
@@ -80,10 +86,48 @@ export default class Miner {
     return await blockBuilder.build();
   }
 
-  async createTransaction(txData: FeeMarketEIP1559TxData) {
-    return FeeMarketEIP1559Transaction.fromTxData(txData, {
-      common: this._common,
-    });
+  sendTransaction(txData: JsonRpcTx) {
+    const { from } = txData;
+    const tx = this.createTransaction(txData);
+    this._txs.push(tx);
+    console.log(tx);
+    return tx.hash();
+  }
+
+  // Define the createTransaction method
+  createTransaction(
+    txData: JsonRpcTx | FeeMarketEIP1559TxData | BlobEIP4844Transaction
+  ):
+    | Transaction
+    | AccessListEIP2930Transaction
+    | FeeMarketEIP1559Transaction
+    | BlobEIP4844Transaction {
+    let tx;
+
+    if (txData.type === "0x1" || txData.type === undefined) {
+      tx = new Transaction(txData as JsonTx, { common: this._common });
+    } else if (txData.type === "0x2") {
+      tx = new AccessListEIP2930Transaction(txData as FeeMarketEIP1559TxData, {
+        common: this._common,
+      });
+    } else if (txData.type === "0x3") {
+      tx = new FeeMarketEIP1559Transaction(txData as FeeMarketEIP1559TxData, {
+        common: this._common,
+      });
+    } else if (txData.type === "0x4") {
+      tx = new BlobEIP4844Transaction(txData as BlobEIP4844Transaction, {
+        common: this._common,
+      });
+    } else {
+      throw new Error(`Invalid transaction type: ${txData.type}`);
+    }
+
+    return tx;
+  }
+
+  queueTransaction(tx: FeeMarketEIP1559Transaction) {
+    this._txs.push(tx);
+    return tx;
   }
 
   async getPendingBlock() {
