@@ -63,7 +63,7 @@ export function hexStringToBuffer(hex: string): Buffer {
   return buffer;
 }
 
-export function decimalToHexString(num: number): string {
+export function numberToHexString(num: number | BigInt): string {
   const hexString = num.toString(16);
   return `0x${hexString}`;
 }

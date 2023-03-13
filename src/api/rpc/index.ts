@@ -2,7 +2,7 @@ import Miner from "../../miner";
 import {
   flattenObject,
   hexStringToBuffer,
-  decimalToHexString,
+  numberToHexString,
 } from "../../utils";
 import createLogger from "../../logger";
 
@@ -32,6 +32,7 @@ export default class RPC {
       eth_chainId: this.eth_chainId.bind(this),
       eth_syncing: this.eth_syncing.bind(this),
       eth_accounts: this.eth_accounts.bind(this),
+      eth_blockNumber: this.eth_blockNumber.bind(this),
       // evm
       evm_mineBlock: this.evm_mineBlock.bind(this),
       evm_minerStart: this.evm_minerStart.bind(this),
@@ -66,7 +67,7 @@ export default class RPC {
       const hash = hexStringToBuffer(blockHash);
       const block = await this._miner.getBlock(hash);
 
-      return decimalToHexString(block.transactions.length);
+      return numberToHexString(block.transactions.length);
     } catch (e: any) {
       logger.error(e.message);
     }
@@ -77,7 +78,7 @@ export default class RPC {
     try {
       const block = await this._miner.getBlock(blockNumber);
 
-      return decimalToHexString(block.transactions.length);
+      return numberToHexString(block.transactions.length);
     } catch (e: any) {
       logger.error(e.message);
     }
@@ -89,7 +90,7 @@ export default class RPC {
       const hash = hexStringToBuffer(blockHash);
       const block = await this._miner.getBlock(hash);
 
-      return decimalToHexString(block.uncleHeaders.length);
+      return numberToHexString(block.uncleHeaders.length);
     } catch (e: any) {
       logger.error(e.message);
     }
@@ -100,7 +101,7 @@ export default class RPC {
     try {
       const block = await this._miner.getBlock(blockNumber);
 
-      return decimalToHexString(block.uncleHeaders.length);
+      return numberToHexString(block.uncleHeaders.length);
     } catch (e: any) {
       logger.error(e.message);
     }
@@ -123,7 +124,9 @@ export default class RPC {
     return this._miner.accounts;
   }
 
-  eth_blockNumber() {}
+  eth_blockNumber() {
+    return numberToHexString(this._miner._latestBlockNumber);
+  }
 
   eth_call() {}
 

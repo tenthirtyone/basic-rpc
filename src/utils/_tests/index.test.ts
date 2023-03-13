@@ -1,5 +1,5 @@
 import assert from "assert";
-import { mergeDeep, decimalToHexString } from "../";
+import { mergeDeep, numberToHexString } from "../";
 
 describe("utils", () => {
   const obj1 = {
@@ -21,10 +21,10 @@ describe("utils", () => {
 
     assert.strictEqual(obj.name, obj2.name);
   });
-  describe("decimalToHexString", () => {
+  describe("numberToHexString", () => {
     it("converts a decimal to a 0x prefixed hex string", () => {
       const value = 16;
-      assert.strictEqual(decimalToHexString(value), "0x10");
+      assert.strictEqual(numberToHexString(value), "0x10");
     });
   });
 });
