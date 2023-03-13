@@ -1,6 +1,10 @@
 import { VM as EJS_VM } from "@ethereumjs/vm";
 import { Blockchain } from "@ethereumjs/blockchain";
 import { Block } from "@ethereumjs/block";
+import {
+  FeeMarketEIP1559Transaction,
+  FeeMarketEIP1559TxData,
+} from "@ethereumjs/tx";
 import { Common } from "@ethereumjs/common";
 import { oneSecond } from "../utils";
 import { Tag } from "../_types";
@@ -74,6 +78,12 @@ export default class Miner {
     this._latestBlockNumber++;
 
     return await blockBuilder.build();
+  }
+
+  async createTransaction(txData: FeeMarketEIP1559TxData) {
+    return FeeMarketEIP1559Transaction.fromTxData(txData, {
+      common: this._common,
+    });
   }
 
   async getPendingBlock() {

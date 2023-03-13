@@ -1,26 +1,36 @@
 import hdkey from "hdkey";
 import { Buffer } from "buffer";
+
 const bip39 = require("bip39");
 
+type Account = {
+  privateKey: Buffer;
+  publicKey: Buffer;
+  address: string;
+};
+
 export default class DevHDWallet {
-  private readonly _seedPhrase: string;
-  private readonly _hdWallet;
-  private readonly _path: string = "m/00'/00'/0'/0/0";
-  private readonly _privateKey: Buffer;
-  private readonly _publicKey: Buffer;
-  private readonly _address: string;
+  _seedPhrase: string;
+  _hdKey;
+  _path: string = "m/00'/00'/0'/0/0";
+  _privateKey: Buffer;
+  _publicKey: Buffer;
+  _address: string;
+  _accounts: Account[];
 
   get accounts() {
-    return [this._address];
+    return this._accounts.map((account) => account.address);
   }
 
   constructor(path?: string) {
     this._seedPhrase = bip39.generateMnemonic();
     this._path = path || this._path;
 
-    this._hdWallet = hdkey.fromMasterSeed(
+    this._hdKey = hdkey.fromMasterSeed(
       bip39.mnemonicToSeedSync(this._seedPhrase)
     );
+
+    this._accounts = this.createNAccounts(10);
 
     const { privateKey, publicKey, address } = this.getAccountAtIndex(0);
 
@@ -29,7 +39,7 @@ export default class DevHDWallet {
     this._address = address;
   }
 
-  createNAccounts(n: number) {
+  createNAccounts(n: number): Account[] {
     return Array.from({ length: n }).map((_empty, index) => {
       return this.getAccountAtIndex(index);
     });
@@ -41,8 +51,10 @@ export default class DevHDWallet {
     const accountPath: string =
       this._path.substring(0, lastZeroIndex) + index.toString();
 
-    const hdWalletDerived = this._hdWallet.derive(accountPath);
-    const addressBuffer = DevHDWallet.getAddressBuffer(this._publicKey);
+    const hdWalletDerived = this._hdKey.derive(accountPath);
+    const addressBuffer = DevHDWallet.getAddressBuffer(
+      hdWalletDerived.publicKey
+    );
     return {
       privateKey: hdWalletDerived.privateKey,
       publicKey: hdWalletDerived.publicKey,
@@ -52,10 +64,6 @@ export default class DevHDWallet {
 
   get seedPhrase() {
     return this._seedPhrase;
-  }
-
-  public getAddress(): string {
-    return this._address;
   }
 
   private static getAddressBuffer(publicKey: Buffer): Buffer {
