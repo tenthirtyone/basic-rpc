@@ -68,6 +68,7 @@ export default class DevHDWallet {
   }
 
   getAccountByAddress(address: string) {
+    console.log(address);
     let accounts = this._accounts.filter((account) => {
       return account.address === address;
     });

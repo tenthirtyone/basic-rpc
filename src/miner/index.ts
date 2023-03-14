@@ -97,16 +97,17 @@ export default class Miner {
     const { from } = txData;
     const tx = this.createTransaction(txData);
 
+    console.log(from);
     // sign tx
     const account = this._wallet.getAccountByAddress(from);
     let signedTx;
-    console.log(tx);
+    console.log(account);
     if (account) {
       signedTx = tx.sign(account.privateKey);
     } else {
       throw new Error(`privateKey for ${from} not found`);
     }
-
+    console.log(signedTx);
     this._txs.push(signedTx);
     return bufferToHexString(signedTx.hash());
   }
@@ -159,10 +160,11 @@ export default class Miner {
     const addr = new Address(hexStringToBuffer(address));
     const account = await this._evm.stateManager.getAccount(addr);
 
-    account.balance = 10n;
+    account.balance += BigInt(number);
 
     await this._evm.stateManager.putAccount(addr, account);
-
+    this._evm.stateManager.commit();
+    this._evm.stateManager.flush();
     return account.balance;
   }
 
@@ -188,10 +190,8 @@ export default class Miner {
   }
 
   async getBalance(address: string, blockNumber: string = "latest") {
-    const block = await this.getBlock(blockNumber);
-    console.log(Address.fromString(address));
     const evm = await this._evm.copy();
-    await evm.stateManager.setStateRoot(block.header.stateRoot);
+
     const account = await evm.stateManager.getAccount(
       Address.fromString(address)
     );
