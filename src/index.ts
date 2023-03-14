@@ -9,6 +9,7 @@ import {
 } from "@ethereumjs/common";
 import API from "./api";
 import Miner from "./miner";
+import EthereumHDWallet from "./wallet";
 import { mergeDeep, randomEthereumAddress } from "./utils";
 
 const { Level } = require("level");
@@ -27,11 +28,13 @@ export default class BasicRPC {
   _common: Common;
   _blockchain: Blockchain | undefined;
   _evm: EJS_VM | undefined;
+  _wallet: EthereumHDWallet;
 
   constructor(options?: BasicRPCOptions) {
     this._options = mergeDeep(BasicRPC.DEFAULTS, options);
     this._common = new Common({ ...this._options.common });
     this._db = new MemoryLevel({ valueEncoding: "json" });
+    this._wallet = new EthereumHDWallet();
   }
 
   async start() {
@@ -49,11 +52,11 @@ export default class BasicRPC {
     });
 
     this._miner = new Miner(
-      randomEthereumAddress(),
       this._common,
       this._blockchain,
       this._evm,
-      this._db
+      this._db,
+      this._wallet
     );
 
     this._api = new API(this._miner);

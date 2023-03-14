@@ -10,11 +10,13 @@ import {
   JsonTx,
   JsonRpcTx,
 } from "@ethereumjs/tx";
+import { Address } from "@ethereumjs/util";
 import { Common } from "@ethereumjs/common";
-import { oneSecond } from "../utils";
+import { oneSecond, numberToHexString, hexStringToBuffer } from "../utils";
 import { Tag } from "../_types";
-import { convertToBigInt } from "../utils";
+import { convertToBigInt, bufferToHexString } from "../utils";
 import EthereumHDWallet from "../wallet";
+
 const { Level } = require("level");
 
 export default class Miner {
@@ -43,18 +45,18 @@ export default class Miner {
   }
 
   constructor(
-    coinbase: Buffer,
     common: Common,
     blockchain: Blockchain,
     evm: EJS_VM,
-    db: typeof Level
+    db: typeof Level,
+    wallet: EthereumHDWallet
   ) {
-    this._coinbase = coinbase;
+    this._coinbase = hexStringToBuffer(wallet.accounts[0]);
     this._common = common;
     this._blockchain = blockchain;
     this._evm = evm;
     this._db = db;
-    this._wallet = new EthereumHDWallet();
+    this._wallet = wallet;
   }
 
   minerStart() {
@@ -76,10 +78,15 @@ export default class Miner {
       parentBlock: await this._blockchain.getCanonicalHeadBlock(),
       headerData: {
         coinbase: this._coinbase,
+        gasLimit: 30e10,
       },
     });
 
-    // TODO add transactions from tx pool.
+    await Promise.all(
+      this._txs.map(async (tx) => {
+        return await blockBuilder.addTransaction(tx);
+      })
+    );
 
     this._latestBlockNumber++;
 
@@ -89,9 +96,19 @@ export default class Miner {
   sendTransaction(txData: JsonRpcTx) {
     const { from } = txData;
     const tx = this.createTransaction(txData);
-    this._txs.push(tx);
+
+    // sign tx
+    const account = this._wallet.getAccountByAddress(from);
+    let signedTx;
     console.log(tx);
-    return tx.hash();
+    if (account) {
+      signedTx = tx.sign(account.privateKey);
+    } else {
+      throw new Error(`privateKey for ${from} not found`);
+    }
+
+    this._txs.push(signedTx);
+    return bufferToHexString(signedTx.hash());
   }
 
   // Define the createTransaction method
@@ -104,18 +121,24 @@ export default class Miner {
     | BlobEIP4844Transaction {
     let tx;
 
-    if (txData.type === "0x1" || txData.type === undefined) {
-      tx = new Transaction(txData as JsonTx, { common: this._common });
+    if (txData.type === "0x0" || txData.type === undefined) {
+      tx = Transaction.fromTxData(txData as JsonTx, { common: this._common });
+    } else if (txData.type === "0x1") {
+      tx = AccessListEIP2930Transaction.fromTxData(
+        txData as FeeMarketEIP1559TxData,
+        {
+          common: this._common,
+        }
+      );
     } else if (txData.type === "0x2") {
-      tx = new AccessListEIP2930Transaction(txData as FeeMarketEIP1559TxData, {
-        common: this._common,
-      });
-    } else if (txData.type === "0x3") {
-      tx = new FeeMarketEIP1559Transaction(txData as FeeMarketEIP1559TxData, {
-        common: this._common,
-      });
-    } else if (txData.type === "0x4") {
-      tx = new BlobEIP4844Transaction(txData as BlobEIP4844Transaction, {
+      tx = FeeMarketEIP1559Transaction.fromTxData(
+        txData as FeeMarketEIP1559TxData,
+        {
+          common: this._common,
+        }
+      );
+    } else if (txData.type === "0x5") {
+      tx = BlobEIP4844Transaction.fromTxData(txData as BlobEIP4844Transaction, {
         common: this._common,
       });
     } else {
@@ -130,17 +153,49 @@ export default class Miner {
     return tx;
   }
 
+  async fundAccount(address: string, number: string) {
+    this._evm.stateManager.checkpoint();
+
+    const addr = new Address(hexStringToBuffer(address));
+    const account = await this._evm.stateManager.getAccount(addr);
+
+    account.balance = 10n;
+
+    await this._evm.stateManager.putAccount(addr, account);
+
+    return account.balance;
+  }
+
   async getPendingBlock() {
     const tempEVM = await this._evm.copy();
     const blockBuilder = await tempEVM.buildBlock({
       parentBlock: await this._blockchain.getCanonicalHeadBlock(),
+      headerData: {
+        coinbase: this._coinbase,
+        gasLimit: 30e10,
+      },
     });
 
-    // TODO add transactions from tx pool.
+    await Promise.all(
+      this._txs.map(async (tx) => {
+        return await blockBuilder.addTransaction(tx);
+      })
+    );
 
     const block = await blockBuilder.build();
 
     return block;
+  }
+
+  async getBalance(address: string, blockNumber: string = "latest") {
+    const block = await this.getBlock(blockNumber);
+    console.log(Address.fromString(address));
+    const evm = await this._evm.copy();
+    await evm.stateManager.setStateRoot(block.header.stateRoot);
+    const account = await evm.stateManager.getAccount(
+      Address.fromString(address)
+    );
+    return numberToHexString(account.balance);
   }
 
   async getBlock(

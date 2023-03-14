@@ -10,7 +10,7 @@ type Account = {
 };
 
 export default class DevHDWallet {
-  _seedPhrase: string = bip39.generateMnemonic();
+  _seedPhrase: string;
   _hdKey;
   _path: string = "m/00'/00'/0'/0/0";
   _privateKey: Buffer;
@@ -22,9 +22,14 @@ export default class DevHDWallet {
     return this._accounts.map((account) => account.address);
   }
 
-  constructor(mnemonic?: string, path?: string) {
-    this._seedPhrase = mnemonic || this._seedPhrase;
+  constructor(
+    mnemonic: string = "antenna captain blossom target trick bread young wine shrug three chat buffalo",
+    path?: string
+  ) {
+    this._seedPhrase = mnemonic;
     this._path = path || this._path;
+
+    console.log(this._seedPhrase);
 
     this._hdKey = hdkey.fromMasterSeed(
       bip39.mnemonicToSeedSync(this._seedPhrase)
@@ -60,6 +65,16 @@ export default class DevHDWallet {
       publicKey: hdWalletDerived.publicKey,
       address: DevHDWallet.bufferToChecksumAddress(addressBuffer),
     };
+  }
+
+  getAccountByAddress(address: string) {
+    let accounts = this._accounts.filter((account) => {
+      return account.address === address;
+    });
+
+    if (accounts.length) {
+      return accounts[0];
+    }
   }
 
   get seedPhrase() {

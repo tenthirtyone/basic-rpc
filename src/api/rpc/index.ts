@@ -36,8 +36,10 @@ export default class RPC {
       eth_blockNumber: this.eth_blockNumber.bind(this),
 
       eth_sendTransaction: this.eth_sendTransaction.bind(this),
+      eth_getBalance: this.eth_getBalance.bind(this),
       // evm
       evm_mineBlock: this.evm_mineBlock.bind(this),
+      evm_fundAccount: this.evm_fundAccount.bind(this),
       evm_minerStart: this.evm_minerStart.bind(this),
       evm_minerStop: this.evm_minerStop.bind(this),
     };
@@ -147,10 +149,17 @@ export default class RPC {
     return this._miner.sendTransaction(txData);
   }
 
+  async eth_getBalance(address: string, blockNumber: string = "latest") {
+    return await this._miner.getBalance(address, blockNumber);
+  }
   // evm
   async evm_mineBlock() {
     const block = await this._miner.mineBlock();
     return flattenObject(block.toJSON());
+  }
+
+  async evm_fundAccount(address: string, amount: string) {
+    return numberToHexString(await this._miner.fundAccount(address, amount));
   }
 
   evm_minerStart() {
