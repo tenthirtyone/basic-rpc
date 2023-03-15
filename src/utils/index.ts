@@ -12,7 +12,7 @@ export const generatePrivateKey = (): Buffer => {
   return privateKey;
 };
 
-const isValidPrivateKey = (privateKey: Buffer): boolean => {
+export const isValidPrivateKey = (privateKey: Buffer): boolean => {
   const ecdh = crypto.createECDH("secp256k1");
   ecdh.setPrivateKey(privateKey);
   const publicKey = ecdh.getPublicKey();
@@ -35,13 +35,20 @@ type AnyObject = { [key: string]: any };
 
 export function flattenObject(obj: AnyObject): AnyObject {
   const result: AnyObject = {};
-  for (const [key, value] of Object.entries(obj)) {
-    if (typeof value === "object" && value !== null) {
-      Object.assign(result, flattenObject(value));
-    } else {
-      result[key] = value;
+
+  function recurse(obj: AnyObject, currentKey: string) {
+    for (const [key, value] of Object.entries(obj)) {
+      const newKey = currentKey ? `${currentKey}.${key}` : key;
+      if (typeof value === "object" && value !== null) {
+        recurse(value, newKey);
+      } else {
+        result[newKey] = value;
+      }
     }
   }
+
+  recurse(obj, "");
+
   return result;
 }
 
@@ -64,7 +71,7 @@ export function hexStringToBuffer(hex: string): Buffer {
   return buffer;
 }
 
-export function numberToHexString(num: number | BigInt): string {
+export function bigintToHexString(num: BigInt): string {
   return `0x${num.toString(16)}`;
 }
 
@@ -76,6 +83,6 @@ function generateRandomBytes(len: number): Buffer {
   return crypto.randomBytes(len);
 }
 
-export function bufferToHexString(num: Buffer): string {
-  return `0x${num.toString("hex")}`;
+export function bufferToHexString(buffer: Buffer): string {
+  return `0x${buffer.toString("hex")}`;
 }

@@ -3,7 +3,7 @@ import { FeeMarketEIP1559TxData, JsonRpcTx } from "@ethereumjs/tx";
 import {
   flattenObject,
   hexStringToBuffer,
-  numberToHexString,
+  bigintToHexString,
   bufferToHexString,
 } from "../../utils";
 import createLogger from "../../logger";
@@ -73,7 +73,7 @@ export default class RPC {
       const hash = hexStringToBuffer(blockHash);
       const block = await this._miner.getBlock(hash);
 
-      return numberToHexString(block.transactions.length);
+      return bigintToHexString(BigInt(block.transactions.length));
     } catch (e: any) {
       logger.error(e.message);
     }
@@ -84,7 +84,7 @@ export default class RPC {
     try {
       const block = await this._miner.getBlock(blockNumber);
 
-      return numberToHexString(block.transactions.length);
+      return bigintToHexString(BigInt(block.transactions.length));
     } catch (e: any) {
       logger.error(e.message);
     }
@@ -96,7 +96,7 @@ export default class RPC {
       const hash = hexStringToBuffer(blockHash);
       const block = await this._miner.getBlock(hash);
 
-      return numberToHexString(block.uncleHeaders.length);
+      return bigintToHexString(BigInt(block.uncleHeaders.length));
     } catch (e: any) {
       logger.error(e.message);
     }
@@ -107,7 +107,7 @@ export default class RPC {
     try {
       const block = await this._miner.getBlock(blockNumber);
 
-      return numberToHexString(block.uncleHeaders.length);
+      return bigintToHexString(BigInt(block.uncleHeaders.length));
     } catch (e: any) {
       logger.error(e.message);
     }
@@ -131,7 +131,7 @@ export default class RPC {
   }
 
   eth_blockNumber() {
-    return numberToHexString(this._miner._latestBlockNumber);
+    return bigintToHexString(this._miner._latestBlockNumber);
   }
 
   eth_call() {}
@@ -151,7 +151,7 @@ export default class RPC {
   }
 
   async eth_getBalance(address: string, blockNumber: string = "latest") {
-    return numberToHexString(await this._miner.getBalance(address));
+    return bigintToHexString(await this._miner.getBalance(address));
   }
   // evm
   async evm_mineBlock() {
