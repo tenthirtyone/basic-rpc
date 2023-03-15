@@ -10,11 +10,20 @@ import {
   JsonTx,
   JsonRpcTx,
 } from "@ethereumjs/tx";
-import { Address } from "@ethereumjs/util";
+import {
+  Account,
+  Address,
+  privateToPublic,
+  publicToAddress,
+} from "@ethereumjs/util";
 import { Common } from "@ethereumjs/common";
-import { oneSecond, numberToHexString, hexStringToBuffer } from "../utils";
+import {
+  oneSecond,
+  convertToBigInt,
+  hexStringToBuffer,
+  generatePrivateKey,
+} from "../utils";
 import { Tag } from "../_types";
-import { convertToBigInt, bufferToHexString } from "../utils";
 
 const { Level } = require("level");
 
@@ -29,6 +38,8 @@ export default class Miner {
   _miningLoop: NodeJS.Timer | undefined;
   _latestBlockNumber: bigint = 0n;
   _txs: any[] = [];
+  _accounts: Account[] = [];
+  _keys: any[] = [];
 
   get chainId() {
     return this._common.chainId;
@@ -53,6 +64,48 @@ export default class Miner {
     this._blockchain = blockchain;
     this._evm = evm;
     this._db = db;
+
+    this.createAccounts(10n, 1000n);
+    this._keys.forEach((keys) => {
+      console.log(keys.address.toString("hex"));
+    });
+  }
+
+  createAccounts(n: bigint, amount: bigint) {
+    while (n--) {
+      this.createAccount(amount);
+    }
+  }
+
+  createAccount(amount: bigint) {
+    const newAccount = new Account(0n, 0n);
+    const newKey = this._createKey();
+
+    newAccount.balance = amount;
+
+    this._accounts.push(newAccount);
+    this._keys.push(newKey);
+
+    this._evm.stateManager.putAccount(newKey.address, newAccount);
+
+    return newAccount;
+  }
+
+  private _createKey() {
+    const privateKey = generatePrivateKey();
+    const publicKey = privateToPublic(privateKey);
+    return {
+      privateKey,
+      publicKey,
+      address: new Address(publicToAddress(publicKey)),
+    };
+  }
+
+  async getBalance(address: string) {
+    const account = await this._evm.stateManager.getAccount(
+      Address.fromString(address)
+    );
+    return account ? account.balance : 0n;
   }
 
   minerStart() {

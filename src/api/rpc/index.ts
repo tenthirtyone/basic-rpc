@@ -150,7 +150,7 @@ export default class RPC {
   }
 
   async eth_getBalance(address: string, blockNumber: string = "latest") {
-    return "0x0";
+    return numberToHexString(await this._miner.getBalance(address));
   }
   // evm
   async evm_mineBlock() {

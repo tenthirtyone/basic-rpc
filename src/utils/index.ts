@@ -3,6 +3,22 @@ export const oneSecond = 1000;
 export const oneMinute = oneSecond * 60;
 export const oneHour = oneMinute * 60;
 
+export const generatePrivateKey = (): Buffer => {
+  let privateKey: Buffer;
+  do {
+    privateKey = crypto.randomBytes(32);
+  } while (!isValidPrivateKey(privateKey));
+
+  return privateKey;
+};
+
+const isValidPrivateKey = (privateKey: Buffer): boolean => {
+  const ecdh = crypto.createECDH("secp256k1");
+  ecdh.setPrivateKey(privateKey);
+  const publicKey = ecdh.getPublicKey();
+  return publicKey.length !== 0;
+};
+
 export const mergeDeep = (target: any, source?: any) => {
   if (!source) return target;
 
