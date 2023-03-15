@@ -1,5 +1,5 @@
 import Miner from "../../miner";
-import { JsonRpcTx } from "@ethereumjs/tx";
+import { FeeMarketEIP1559TxData, JsonRpcTx } from "@ethereumjs/tx";
 import {
   flattenObject,
   hexStringToBuffer,
@@ -146,8 +146,8 @@ export default class RPC {
 
   eth_feeHistory() {}
 
-  eth_sendTransaction(txData: JsonRpcTx) {
-    return bufferToHexString(this._miner.sendTransaction(txData));
+  async eth_sendTransaction(txData: FeeMarketEIP1559TxData) {
+    return bufferToHexString(await this._miner.sendTransaction(txData));
   }
 
   async eth_getBalance(address: string, blockNumber: string = "latest") {

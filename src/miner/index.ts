@@ -3,12 +3,14 @@ import { Blockchain } from "@ethereumjs/blockchain";
 import { Block } from "@ethereumjs/block";
 import {
   AccessListEIP2930Transaction,
+  AccessListEIP2930TxData,
   BlobEIP4844Transaction,
-  Transaction,
+  BlobEIP4844TxData,
   FeeMarketEIP1559Transaction,
   FeeMarketEIP1559TxData,
   JsonTx,
   JsonRpcTx,
+  Transaction,
 } from "@ethereumjs/tx";
 import {
   Account,
@@ -154,28 +156,36 @@ export default class Miner {
     return await blockBuilder.build();
   }
 
-  sendTransaction(txData: JsonRpcTx) {
-    const { from } = txData;
-    const tx = this.createTransaction(txData);
-    console.log(tx);
+  // send a transaction from the coinbase account
+  async sendTransaction(txData: FeeMarketEIP1559TxData) {
+    const from = new Address(this._coinbase).toString();
+
     const accountIndex = this._keys.findIndex((keys) => {
-      console.log(keys.address.toString());
       return keys.address.toString().toUpperCase() === from.toUpperCase();
     });
 
-    let signedTx;
-    if (accountIndex >= 0) {
-      signedTx = tx.sign(this._keys[accountIndex].privateKey);
-    } else {
-      throw new Error(`privateKey for ${from} not found`);
-    }
+    if (accountIndex < 0) throw new Error(`privateKey for ${from} not found`);
+
+    const keys = this._keys[accountIndex];
+    const account = await this._evm.stateManager.getAccount(keys.address);
+
+    // todo, default values for maxFeePerGas, gasLimit, maxPriorityFeePerGas
+    if (!txData.nonce) txData.nonce = account.nonce;
+
+    const tx = this.createTransaction(txData);
+
+    const signedTx = tx.sign(this._keys[accountIndex].privateKey);
 
     this._txs.push(signedTx);
     return signedTx.hash();
   }
 
   createTransaction(
-    txData: JsonRpcTx | FeeMarketEIP1559TxData | BlobEIP4844Transaction
+    txData:
+      | JsonRpcTx
+      | AccessListEIP2930TxData
+      | FeeMarketEIP1559TxData
+      | BlobEIP4844Transaction
   ):
     | Transaction
     | AccessListEIP2930Transaction
@@ -187,7 +197,7 @@ export default class Miner {
       tx = Transaction.fromTxData(txData as JsonTx, { common: this._common });
     } else if (txData.type === "0x1") {
       tx = AccessListEIP2930Transaction.fromTxData(
-        txData as FeeMarketEIP1559TxData,
+        txData as AccessListEIP2930TxData,
         {
           common: this._common,
         }
@@ -200,7 +210,7 @@ export default class Miner {
         }
       );
     } else if (txData.type === "0x5") {
-      tx = BlobEIP4844Transaction.fromTxData(txData as BlobEIP4844Transaction, {
+      tx = BlobEIP4844Transaction.fromTxData(txData as BlobEIP4844TxData, {
         common: this._common,
       });
     } else {
