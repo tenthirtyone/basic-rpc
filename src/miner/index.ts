@@ -15,7 +15,6 @@ import { Common } from "@ethereumjs/common";
 import { oneSecond, numberToHexString, hexStringToBuffer } from "../utils";
 import { Tag } from "../_types";
 import { convertToBigInt, bufferToHexString } from "../utils";
-import EthereumHDWallet from "../wallet";
 
 const { Level } = require("level");
 
@@ -29,7 +28,6 @@ export default class Miner {
   _miningInterval = oneSecond;
   _miningLoop: NodeJS.Timer | undefined;
   _latestBlockNumber: bigint = 0n;
-  _wallet: EthereumHDWallet;
   _txs: any[] = [];
 
   get chainId() {
@@ -41,22 +39,20 @@ export default class Miner {
   }
 
   get accounts() {
-    return this._wallet.accounts;
+    return [];
   }
 
   constructor(
     common: Common,
     blockchain: Blockchain,
     evm: EJS_VM,
-    db: typeof Level,
-    wallet: EthereumHDWallet
+    db: typeof Level
   ) {
-    this._coinbase = hexStringToBuffer(wallet.accounts[0]);
+    this._coinbase = hexStringToBuffer("0x00");
     this._common = common;
     this._blockchain = blockchain;
     this._evm = evm;
     this._db = db;
-    this._wallet = wallet;
   }
 
   minerStart() {
@@ -99,17 +95,17 @@ export default class Miner {
 
     console.log(from);
     // sign tx
-    const account = this._wallet.getAccountByAddress(from);
-    let signedTx;
-    console.log(account);
-    if (account) {
-      signedTx = tx.sign(account.privateKey);
-    } else {
-      throw new Error(`privateKey for ${from} not found`);
-    }
-    console.log(signedTx);
-    this._txs.push(signedTx);
-    return bufferToHexString(signedTx.hash());
+    //const account = this._wallet.getAccountByAddress(from);
+    //let signedTx;
+    //console.log(account);
+    //if (account) {
+    //  signedTx = tx.sign(account.privateKey);
+    //} else {
+    //  throw new Error(`privateKey for ${from} not found`);
+    //}
+    //console.log(signedTx);
+    //this._txs.push(signedTx);
+    return "0x0";
   }
 
   // Define the createTransaction method
@@ -154,20 +150,6 @@ export default class Miner {
     return tx;
   }
 
-  async fundAccount(address: string, number: string) {
-    this._evm.stateManager.checkpoint();
-
-    const addr = new Address(hexStringToBuffer(address));
-    const account = await this._evm.stateManager.getAccount(addr);
-
-    account.balance += BigInt(number);
-
-    await this._evm.stateManager.putAccount(addr, account);
-    this._evm.stateManager.commit();
-    this._evm.stateManager.flush();
-    return account.balance;
-  }
-
   async getPendingBlock() {
     const tempEVM = await this._evm.copy();
     const blockBuilder = await tempEVM.buildBlock({
@@ -187,15 +169,6 @@ export default class Miner {
     const block = await blockBuilder.build();
 
     return block;
-  }
-
-  async getBalance(address: string, blockNumber: string = "latest") {
-    const evm = await this._evm.copy();
-
-    const account = await evm.stateManager.getAccount(
-      Address.fromString(address)
-    );
-    return numberToHexString(account.balance);
   }
 
   async getBlock(
