@@ -15,10 +15,8 @@ export const bodyParser = (
   });
 
   req.on("end", async () => {
-    const rawBody = Buffer.concat(data).toString();
     try {
       req.body = JSON.parse(Buffer.concat(data).toString());
-      logger.info(`POST body: ${rawBody}`);
       next();
     } catch (e: any) {
       logger.error(e.message);
@@ -27,4 +25,11 @@ export const bodyParser = (
       res.end(e.message);
     }
   });
+};
+
+export const parseRequestBody = (data: Buffer[]) => {
+  const rawBody = Buffer.concat(data).toString();
+
+  logger.info(`POST body: ${rawBody}`);
+  return JSON.parse(rawBody);
 };

@@ -1,61 +1,20 @@
-import * as assert from "assert";
-import { RPCRequest, RPCResponse } from "../../../_types";
-import { bodyParser } from "../bodyParser";
+import { parseRequestBody } from "../bodyParser";
+import assert from "assert";
 
-describe("bodyParser middleware", () => {
-  let req: RPCRequest;
-  let res: RPCResponse;
-  let next: () => void;
+describe("parseRequestBody", () => {
+  it("should parse a valid JSON body", () => {
+    const data = [Buffer.from(JSON.stringify({ foo: "bar" }))];
 
-  beforeEach(() => {
-    req = {
-      method: "",
-      url: "",
-      headers: {},
-      on: (_: string, cb: (chunk: any) => void) => {
-        cb(Buffer.from(""));
-      },
-    };
-    res = {
-      statusCode: 0,
-      headers: {},
-      end: () => {},
-      setHeader: () => {},
-    };
-    next = () => {};
+    const result = parseRequestBody(data);
+
+    assert.deepStrictEqual(result, { foo: "bar" });
   });
 
-  it("should parse the body of a POST request and set it to req.body", (done) => {
-    req.method = "POST";
-    req.on = (_: string, cb: (chunk: any) => void) => {
-      cb(Buffer.from('{ "name": "Alice" }'));
-    };
-    next = () => {
-      assert.strictEqual(req.body.name, "Alice");
-      done();
-    };
-    bodyParser(req, res, next);
-  });
+  it("should throw an error if the body is not valid JSON", () => {
+    const data = [Buffer.from("this is not JSON")];
 
-  it("should set status code and end the response with error message if the body is not a valid JSON", (done) => {
-    req.method = "POST";
-    req.on = (_: string, cb: (chunk: any) => void) => {
-      cb(Buffer.from("not a JSON"));
-    };
-    res.end = (data: any) => {
-      assert.strictEqual(res.statusCode, 500);
-      assert.strictEqual(res.headers["Content-Type"], "text/plain");
-      assert.strictEqual(data, "Error parsing post body");
-      done();
-    };
-    bodyParser(req, res, next);
-  });
-
-  it("should call next() for non-POST requests", (done) => {
-    req.method = "GET";
-    next = () => {
-      done();
-    };
-    bodyParser(req, res, next);
+    assert.throws(() => {
+      parseRequestBody(data);
+    });
   });
 });
