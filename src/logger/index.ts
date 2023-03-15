@@ -19,7 +19,7 @@ const minLength16 = minLength(16);
 export default function createLogger(name: string) {
   const logger = bunyan.createLogger({
     name: minLength16(name),
-    level: "info",
+    level: process.env.NODE_ENV === "test" ? 100 : "info",
     streams: [
       {
         type: "file",

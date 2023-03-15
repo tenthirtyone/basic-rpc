@@ -5,6 +5,7 @@ import { Middleware, RPCRequest, RPCResponse } from "../_types";
 import { authentication, logging, bodyParser } from "./middleware";
 import createLogger from "../logger";
 
+const apiLogger = createLogger("API");
 const requestLogger = createLogger("RPC Request");
 const responseLogger = createLogger("RPC Response");
 export default class API {
@@ -68,7 +69,7 @@ export default class API {
 
   start(): void {
     this._server.listen(4000, () => {
-      console.log("Server running on port 4000");
+      apiLogger.info("Server running on port 4000");
     });
   }
 

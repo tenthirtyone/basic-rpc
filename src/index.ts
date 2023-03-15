@@ -15,13 +15,22 @@ import { mergeDeep, randomEthereumAddress } from "./utils";
 const { Level } = require("level");
 const { MemoryLevel } = require("memory-level");
 
-type BasicRPCOptions = {
+type DbOpts = { valueEncoding: "json" };
+
+type BasicRpcOptionals = {
   workspace?: string;
+  common?: CommonOpts;
+  db?: DbOpts;
+};
+
+type BasicRpcOptions = {
+  workspace: string;
   common: CommonOpts;
+  db?: DbOpts;
 };
 
 export default class BasicRPC {
-  _options: BasicRPCOptions;
+  _options: BasicRpcOptions;
   _api: API | undefined;
   _miner: Miner | undefined;
   _db: typeof Level;
@@ -29,10 +38,10 @@ export default class BasicRPC {
   _blockchain: Blockchain | undefined;
   _evm: EJS_VM | undefined;
 
-  constructor(options?: BasicRPCOptions) {
+  constructor(options?: BasicRpcOptionals) {
     this._options = mergeDeep(BasicRPC.DEFAULTS, options);
     this._common = new Common({ ...this._options.common });
-    this._db = new MemoryLevel({ valueEncoding: "json" });
+    this._db = new MemoryLevel({ ...this._options.db });
   }
 
   async start() {
@@ -68,7 +77,7 @@ export default class BasicRPC {
     }
   }
 
-  static get DEFAULTS(): BasicRPCOptions {
+  static get DEFAULTS(): BasicRpcOptions {
     return {
       workspace: "default",
       common: {
@@ -76,6 +85,7 @@ export default class BasicRPC {
         hardfork: Hardfork.Merge,
         eips: [1559],
       },
+      db: { valueEncoding: "json" },
     };
   }
 }

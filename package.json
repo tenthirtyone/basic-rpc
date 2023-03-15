@@ -6,7 +6,7 @@
   "scripts": {
     "tsc": "tsc --build",
     "test": "nyc --reporter lcov npm run mocha",
-    "mocha": "cross-env TS_NODE_FILES=true mocha --exit --check-leaks --throw-deprecation --trace-warnings --require ts-node/register './src/**/*.test.ts'",
+    "mocha": "cross-env NODE_ENV=test TS_NODE_FILES=true mocha --exit --check-leaks --throw-deprecation --trace-warnings --require ts-node/register './src/**/*.test.ts'",
     "mocha-watch": "cross-env TS_NODE_FILES=true mocha  --exit --check-leaks --throw-deprecation --trace-warnings --require ts-node/register './src/**/*.test.ts' --watch --watch-files src/**/*,test/**/*"
   },
   "keywords": [],

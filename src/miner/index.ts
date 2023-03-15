@@ -19,12 +19,7 @@ import {
   publicToAddress,
 } from "@ethereumjs/util";
 import { Common } from "@ethereumjs/common";
-import {
-  oneSecond,
-  convertToBigInt,
-  hexStringToBuffer,
-  generatePrivateKey,
-} from "../utils";
+import { oneSecond, convertToBigInt, generatePrivateKey } from "../utils";
 import { Tag } from "../_types";
 
 const { Level } = require("level");
@@ -67,7 +62,7 @@ export default class Miner {
 
     this.createAccounts(10n, BigInt(1000 * 1e18));
     this._keys.forEach((keys) => {
-      console.log(keys.address.toString("hex"));
+      //console.log(keys.address.toString("hex"));
     });
     this._coinbase = this._keys[0].address.toBuffer();
   }

@@ -10,14 +10,4 @@ describe("miner", () => {
   afterEach(() => {
     miner = null;
   });
-
-  it("exists", () => {
-    //console.log(miner);
-  });
-  it("mines a block", () => {
-    //miner.mineBlock();
-  });
-  it.only("creates an account", () => {
-    console.log(a);
-  });
 });
