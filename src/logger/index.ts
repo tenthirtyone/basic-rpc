@@ -14,7 +14,7 @@ const minLength = (minWidth: number) => {
   };
 };
 
-const minLength16 = minLength(16);
+export const minLength16 = minLength(16);
 
 export default function createLogger(name: string) {
   const logger = bunyan.createLogger({
