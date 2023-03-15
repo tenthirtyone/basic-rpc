@@ -38,7 +38,6 @@ export default class Miner {
   _miningLoop: NodeJS.Timer | undefined;
   _latestBlockNumber: bigint = 0n;
   _txs: any[] = [];
-  _accounts: Account[] = [];
   _keys: any[] = [];
 
   get chainId() {
@@ -59,16 +58,16 @@ export default class Miner {
     evm: EJS_VM,
     db: typeof Level
   ) {
-    this._coinbase = hexStringToBuffer("0x00");
     this._common = common;
     this._blockchain = blockchain;
     this._evm = evm;
     this._db = db;
 
-    this.createAccounts(10n, 1000n);
+    this.createAccounts(10n, BigInt(1000 * 1e18));
     this._keys.forEach((keys) => {
       console.log(keys.address.toString("hex"));
     });
+    this._coinbase = this._keys[0].address.toBuffer();
   }
 
   createAccounts(n: bigint, amount: bigint) {
@@ -83,9 +82,7 @@ export default class Miner {
 
     newAccount.balance = amount;
 
-    this._accounts.push(newAccount);
     this._keys.push(newKey);
-
     this._evm.stateManager.putAccount(newKey.address, newAccount);
 
     return newAccount;
@@ -99,6 +96,21 @@ export default class Miner {
       publicKey,
       address: new Address(publicToAddress(publicKey)),
     };
+  }
+
+  async fundAccount(address: string, amount: bigint) {
+    const addr = Address.fromString(address);
+    let account = await this._evm.stateManager.getAccount(addr);
+
+    if (account) {
+      account.balance += amount;
+    } else {
+      account = new Account(0n, amount);
+    }
+
+    await this._evm.stateManager.putAccount(addr, account);
+
+    return account.balance;
   }
 
   async getBalance(address: string) {
@@ -145,23 +157,23 @@ export default class Miner {
   sendTransaction(txData: JsonRpcTx) {
     const { from } = txData;
     const tx = this.createTransaction(txData);
+    console.log(tx);
+    const accountIndex = this._keys.findIndex((keys) => {
+      console.log(keys.address.toString());
+      return keys.address.toString().toUpperCase() === from.toUpperCase();
+    });
 
-    console.log(from);
-    // sign tx
-    //const account = this._wallet.getAccountByAddress(from);
-    //let signedTx;
-    //console.log(account);
-    //if (account) {
-    //  signedTx = tx.sign(account.privateKey);
-    //} else {
-    //  throw new Error(`privateKey for ${from} not found`);
-    //}
-    //console.log(signedTx);
-    //this._txs.push(signedTx);
-    return "0x0";
+    let signedTx;
+    if (accountIndex >= 0) {
+      signedTx = tx.sign(this._keys[accountIndex].privateKey);
+    } else {
+      throw new Error(`privateKey for ${from} not found`);
+    }
+
+    this._txs.push(signedTx);
+    return signedTx.hash();
   }
 
-  // Define the createTransaction method
   createTransaction(
     txData: JsonRpcTx | FeeMarketEIP1559TxData | BlobEIP4844Transaction
   ):
@@ -171,7 +183,7 @@ export default class Miner {
     | BlobEIP4844Transaction {
     let tx;
 
-    if (txData.type === "0x0" || txData.type === undefined) {
+    if (txData.type === "0x0") {
       tx = Transaction.fromTxData(txData as JsonTx, { common: this._common });
     } else if (txData.type === "0x1") {
       tx = AccessListEIP2930Transaction.fromTxData(
@@ -180,7 +192,7 @@ export default class Miner {
           common: this._common,
         }
       );
-    } else if (txData.type === "0x2") {
+    } else if (txData.type === "0x2" || txData.type === undefined) {
       tx = FeeMarketEIP1559Transaction.fromTxData(
         txData as FeeMarketEIP1559TxData,
         {

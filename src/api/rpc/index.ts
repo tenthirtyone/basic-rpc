@@ -4,6 +4,7 @@ import {
   flattenObject,
   hexStringToBuffer,
   numberToHexString,
+  bufferToHexString,
 } from "../../utils";
 import createLogger from "../../logger";
 
@@ -146,7 +147,7 @@ export default class RPC {
   eth_feeHistory() {}
 
   eth_sendTransaction(txData: JsonRpcTx) {
-    return this._miner.sendTransaction(txData);
+    return bufferToHexString(this._miner.sendTransaction(txData));
   }
 
   async eth_getBalance(address: string, blockNumber: string = "latest") {
