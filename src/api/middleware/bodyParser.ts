@@ -8,21 +8,23 @@ export const bodyParser = (
   res: RPCResponse,
   next: () => void
 ) => {
-  let body = "";
+  const data: Buffer[] = [];
 
   req.on("data", (chunk) => {
-    body += chunk.toString();
+    data.push(chunk);
   });
 
   req.on("end", async () => {
+    const rawBody = Buffer.concat(data).toString();
     try {
-      logger.info(`POST body: ${body}`);
-      req.body = JSON.parse(body);
+      req.body = JSON.parse(Buffer.concat(data).toString());
+      logger.info(`POST body: ${rawBody}`);
+      next();
     } catch (e: any) {
-      res.statusCode = 500;
-      res.setHeader("Content-Type", "text/plain");
-      res.end("Error parsing post body");
+      logger.error(e.message);
+      res.statusCode = 400;
+      res.setHeader("Content-Type", "application/text");
+      res.end(e.message);
     }
-    next();
   });
 };
