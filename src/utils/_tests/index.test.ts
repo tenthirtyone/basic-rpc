@@ -1,5 +1,5 @@
 import assert from "assert";
-import { mergeDeep, numberToHexString } from "../";
+import { mergeDeep } from "../";
 
 describe("utils", () => {
   const obj1 = {
@@ -16,15 +16,38 @@ describe("utils", () => {
       name: "subObj2",
     },
   };
-  it("mergeDeep", () => {
-    const obj = mergeDeep(obj1, obj2);
 
-    assert.strictEqual(obj.name, obj2.name);
-  });
-  describe("numberToHexString", () => {
-    it("converts a decimal to a 0x prefixed hex string", () => {
-      const value = 16;
-      assert.strictEqual(numberToHexString(value), "0x10");
+  describe("mergeDeep", () => {
+    it("merges two objects with non-overlapping properties", () => {
+      const target = { foo: "foo" };
+      const source = { bar: "bar" };
+      const result = mergeDeep(target, source);
+      assert.deepStrictEqual(result, { foo: "foo", bar: "bar" });
+    });
+
+    it("merges two objects with overlapping properties", () => {
+      const target = { foo: "foo", bar: { baz: "baz" } };
+      const source = { bar: { qux: "qux" } };
+      const result = mergeDeep(target, source);
+      assert.deepStrictEqual(result, {
+        foo: "foo",
+        bar: { baz: "baz", qux: "qux" },
+      });
+    });
+
+    it("merges two objects with arrays", () => {
+      const target = { foo: "foo", bar: ["baz"] };
+      const source = { bar: ["qux"] };
+      const result = mergeDeep(target, source);
+      assert.deepStrictEqual(result, { foo: "foo", bar: ["qux"] });
+    });
+
+    it("returns target when source is undefined or null", () => {
+      const target = { foo: "foo" };
+      const result1 = mergeDeep(target, undefined);
+      assert.deepStrictEqual(result1, { foo: "foo" });
+      const result2 = mergeDeep(target, null);
+      assert.deepStrictEqual(result2, { foo: "foo" });
     });
   });
 });

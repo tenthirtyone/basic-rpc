@@ -9,10 +9,11 @@ const apiLogger = createLogger("API");
 const requestLogger = createLogger("RPC Request");
 const responseLogger = createLogger("RPC Response");
 export default class API {
-  private _miner: Miner;
-  private _rpc: RPC;
-  private _server: http.Server;
-  private _middlewares: Middleware[] = [];
+  _started: boolean = false;
+  _miner: Miner;
+  _rpc: RPC;
+  _server: http.Server;
+  _middlewares: Middleware[] = [];
 
   constructor(miner: Miner) {
     this.use(logging);
@@ -67,13 +68,22 @@ export default class API {
     this._middlewares.push(middleware);
   }
 
-  start(): void {
-    this._server.listen(4000, () => {
-      apiLogger.info("Server running on port 4000");
+  async start(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      try {
+        this._server.listen(4000, () => {
+          this._started = true;
+          apiLogger.info("Server running on port 4000");
+          resolve();
+        });
+      } catch (e) {
+        reject(e);
+      }
     });
   }
 
   stop(): void {
     this._server.close();
+    this._started = false;
   }
 }

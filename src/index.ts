@@ -67,7 +67,7 @@ export default class BasicRPC {
 
     this._api = new API(this._miner);
 
-    this._api.start();
+    await this._api.start();
   }
 
   close() {

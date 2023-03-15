@@ -19,7 +19,7 @@ import {
   publicToAddress,
 } from "@ethereumjs/util";
 import { Common } from "@ethereumjs/common";
-import { oneSecond, convertToBigInt, generatePrivateKey } from "../utils";
+import { oneSecond, generatePrivateKey } from "../utils";
 import { Tag } from "../_types";
 
 const { Level } = require("level");
@@ -251,7 +251,7 @@ export default class Miner {
     ) {
       return await this._blockchain.getBlock(blockNumber);
     } else if (blockNumber.substring(0, 2) === "0x") {
-      return await this._blockchain.getBlock(convertToBigInt(blockNumber));
+      return await this._blockchain.getBlock(BigInt(blockNumber));
     } else if (blockNumber === "pending") {
       return await this.getPendingBlock();
     } else {
@@ -261,7 +261,7 @@ export default class Miner {
 
   getBlockNumber(blockNumber: string | Tag): bigint {
     if (blockNumber.substring(0, 2) === "0x") {
-      return convertToBigInt(blockNumber);
+      return BigInt(blockNumber);
     } else {
       switch (blockNumber) {
         case "earliest":
