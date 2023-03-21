@@ -147,6 +147,7 @@ export default class Miner {
     );
 
     this._latestBlockNumber++;
+    console.log(await this._blockchain.getIteratorHead("latest"));
 
     return await blockBuilder.build();
   }

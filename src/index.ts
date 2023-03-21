@@ -17,20 +17,20 @@ const { MemoryLevel } = require("memory-level");
 
 type DbOpts = { valueEncoding: "json" };
 
-type BasicRpcOptionals = {
+type EthereumClientOptionals = {
   workspace?: string;
   common?: CommonOpts;
   db?: DbOpts;
 };
 
-type BasicRpcOptions = {
+type EthereumClientOptions = {
   workspace: string;
   common: CommonOpts;
   db?: DbOpts;
 };
 
-export default class BasicRPC {
-  _options: BasicRpcOptions;
+export default class EthereumClient {
+  _options: EthereumClientOptions;
   _api: API | undefined;
   _miner: Miner | undefined;
   _db: typeof Level;
@@ -38,8 +38,8 @@ export default class BasicRPC {
   _blockchain: Blockchain | undefined;
   _evm: EJS_VM | undefined;
 
-  constructor(options?: BasicRpcOptionals) {
-    this._options = mergeDeep(BasicRPC.DEFAULTS, options);
+  constructor(options?: EthereumClientOptionals) {
+    this._options = mergeDeep(EthereumClient.DEFAULTS, options);
     this._common = new Common({ ...this._options.common });
     this._db = new MemoryLevel({ ...this._options.db });
   }
@@ -77,7 +77,7 @@ export default class BasicRPC {
     }
   }
 
-  static get DEFAULTS(): BasicRpcOptions {
+  static get DEFAULTS(): EthereumClientOptions {
     return {
       workspace: "default",
       common: {
@@ -91,8 +91,8 @@ export default class BasicRPC {
 }
 
 if (require.main === module) {
-  const rpc = new BasicRPC();
+  const rpc = new EthereumClient();
   rpc.start();
 } else {
-  module.exports = BasicRPC;
+  module.exports = EthereumClient;
 }
